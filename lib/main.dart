@@ -83,6 +83,18 @@ class _DrillViewState extends State<DrillView> {
     return Random().nextInt(widget.drill.length);
   }
 
+  String _currentQuestion() {
+    return widget.drill[_index][0];
+  }
+
+  String _currentAnswer() {
+    return widget.drill[_index][1];
+  }
+
+  bool _isNumeric(String text) {
+    return double.tryParse(text) != null;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -94,18 +106,13 @@ class _DrillViewState extends State<DrillView> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
               Text(
-                widget.drill[_index][0],
+                _currentQuestion(),
                 style: const TextStyle(fontSize: 256.0),
               ),
               Expanded(
-                child: TextField(
-                  controller: _controller,
-                  decoration: const InputDecoration(
-                    border: OutlineInputBorder(),
-                  ),
-                  style: const TextStyle(fontSize: 256.0),
-                  textAlign: TextAlign.center,
-                ),
+                child: _isNumeric(_currentAnswer())
+                    ? _numericAnswerField()
+                    : _defaultAnswerField(),
               ),
             ],
           ),
@@ -117,7 +124,7 @@ class _DrillViewState extends State<DrillView> {
               return;
             }
 
-            if (_controller.text == widget.drill[_index][1]) {
+            if (_controller.text == _currentAnswer()) {
               showDialog(
                 context: context,
                 builder: (context) {
@@ -182,6 +189,32 @@ class _DrillViewState extends State<DrillView> {
             style: TextStyle(fontSize: 64.0),
           ),
         ),
+      ],
+    );
+  }
+
+  TextField _defaultAnswerField() {
+    return TextField(
+      controller: _controller,
+      decoration: const InputDecoration(
+        border: OutlineInputBorder(),
+      ),
+      style: const TextStyle(fontSize: 256.0),
+      textAlign: TextAlign.center,
+    );
+  }
+
+  TextField _numericAnswerField() {
+    return TextField(
+      controller: _controller,
+      decoration: const InputDecoration(
+        border: OutlineInputBorder(),
+      ),
+      keyboardType: TextInputType.number,
+      style: const TextStyle(fontSize: 256.0),
+      textAlign: TextAlign.center,
+      inputFormatters: <TextInputFormatter>[
+        FilteringTextInputFormatter.digitsOnly,
       ],
     );
   }
