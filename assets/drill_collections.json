@@ -1,0 +1,21 @@
+[
+    {
+        "title": "10までのたしざん",
+        "paths": [
+            "assets/drill/addition_up_to_10.csv"
+        ]
+    },
+    {
+        "title": "10までのひきざん",
+        "paths": [
+            "assets/drill/subtraction_up_to_10.csv"
+        ]
+    },
+    {
+        "title": "ぜんぶ",
+        "paths": [
+            "assets/drill/addition_up_to_10.csv",
+            "assets/drill/subtraction_up_to_10.csv"
+        ]
+    }
+]

@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:math';
 
 import 'package:csv/csv.dart';
@@ -18,23 +19,135 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: const DrillPage(),
+      home: const DrillCollectionListPage(),
     );
   }
 }
 
-class DrillPage extends StatelessWidget {
-  const DrillPage({Key? key}) : super(key: key);
+class DrillCollection {
+  final String title;
+  final List<String> paths;
 
-  Future<List<List<String>>> _loadDrill() async {
-    final csv = await rootBundle.loadString('assets/drill.csv');
-    return const CsvToListConverter(shouldParseNumbers: false).convert(csv);
+  DrillCollection({
+    required this.title,
+    required this.paths,
+  });
+
+  factory DrillCollection.fromJson(Map<String, dynamic> json) =>
+      DrillCollection(
+        title: json['title'],
+        paths: json['paths'].cast<String>(),
+      );
+}
+
+class DrillCollectionListPage extends StatelessWidget {
+  const DrillCollectionListPage({Key? key}) : super(key: key);
+
+  Future<List<DrillCollection>> _loadDrillCollections() async {
+    const path = 'assets/drill_collections.json';
+    final jsonString = await rootBundle.loadString(path);
+    final List<dynamic> jsonList = jsonDecode(jsonString);
+    return jsonList.map((json) => DrillCollection.fromJson(json)).toList();
   }
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<List<List<String>>>(
-      future: _loadDrill(),
+    return FutureBuilder<List<DrillCollection>>(
+      future: _loadDrillCollections(),
+      builder: (context, snapshot) {
+        Widget body;
+        if (snapshot.hasData) {
+          body = DrillCollectionListView(
+            drillCollections: snapshot.data!,
+          );
+        } else if (snapshot.hasError) {
+          body = Center(
+            child: Text('Error: ${snapshot.error}'),
+          );
+        } else {
+          body = const Center(
+            child: CircularProgressIndicator(),
+          );
+        }
+
+        return Scaffold(
+          appBar: AppBar(
+            title: const Text('ドリル'),
+          ),
+          body: body,
+        );
+      },
+    );
+  }
+}
+
+class DrillCollectionListView extends StatelessWidget {
+  final List<DrillCollection> drillCollections;
+
+  const DrillCollectionListView({
+    Key? key,
+    required this.drillCollections,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView.separated(
+      itemBuilder: (context, index) {
+        return ListTile(
+          title: Text(
+            drillCollections[index].title,
+            style: const TextStyle(fontSize: 64.0),
+          ),
+          onTap: () {
+            Navigator.push(context, MaterialPageRoute(
+              builder: (context) {
+                return DrillPage(drillCollection: drillCollections[index]);
+              },
+            ));
+          },
+        );
+      },
+      separatorBuilder: (context, index) => const Divider(),
+      itemCount: drillCollections.length,
+    );
+  }
+}
+
+class Drill {
+  final String question;
+  final String answer;
+
+  Drill({
+    required this.question,
+    required this.answer,
+  });
+}
+
+class DrillPage extends StatelessWidget {
+  final DrillCollection drillCollection;
+
+  const DrillPage({
+    Key? key,
+    required this.drillCollection,
+  }) : super(key: key);
+
+  Future<List<Drill>> _loadDrills() async {
+    List<Drill> result = [];
+    for (var path in drillCollection.paths) {
+      final csvString = await rootBundle.loadString(path);
+      final csv = const CsvToListConverter(shouldParseNumbers: false)
+          .convert(csvString);
+      final drills =
+          csv.map((row) => Drill(question: row[0], answer: row[1])).toList();
+      result.addAll(drills);
+    }
+    return result;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<List<Drill>>(
+      future: _loadDrills(),
       builder: (context, snapshot) {
         Widget body;
         if (snapshot.hasData) {
@@ -51,7 +164,7 @@ class DrillPage extends StatelessWidget {
 
         return Scaffold(
           appBar: AppBar(
-            title: const Text('Drill'),
+            title: Text(drillCollection.title),
           ),
           body: body,
         );
@@ -61,8 +174,9 @@ class DrillPage extends StatelessWidget {
 }
 
 class DrillView extends StatefulWidget {
-  final List<List<String>> drill;
-  const DrillView(this.drill, {Key? key}) : super(key: key);
+  final List<Drill> drills;
+
+  const DrillView(this.drills, {Key? key}) : super(key: key);
 
   @override
   State<DrillView> createState() => _DrillViewState();
@@ -80,15 +194,11 @@ class _DrillViewState extends State<DrillView> {
   }
 
   int _randomIndex() {
-    return Random().nextInt(widget.drill.length);
+    return Random().nextInt(widget.drills.length);
   }
 
-  String _currentQuestion() {
-    return widget.drill[_index][0];
-  }
-
-  String _currentAnswer() {
-    return widget.drill[_index][1];
+  Drill _currentDrill() {
+    return widget.drills[_index];
   }
 
   bool _isNumeric(String text) {
@@ -106,11 +216,11 @@ class _DrillViewState extends State<DrillView> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
               Text(
-                _currentQuestion(),
+                _currentDrill().question,
                 style: const TextStyle(fontSize: 256.0),
               ),
               Expanded(
-                child: _isNumeric(_currentAnswer())
+                child: _isNumeric(_currentDrill().answer)
                     ? _numericAnswerField()
                     : _defaultAnswerField(),
               ),
@@ -124,7 +234,7 @@ class _DrillViewState extends State<DrillView> {
               return;
             }
 
-            if (_controller.text == _currentAnswer()) {
+            if (_controller.text == _currentDrill().answer) {
               showDialog(
                 context: context,
                 builder: (context) {
@@ -171,7 +281,7 @@ class _DrillViewState extends State<DrillView> {
                           Navigator.pop(context);
                         },
                         child: const Text(
-                          'やりなおす',
+                          'やりなおし',
                           style: TextStyle(fontSize: 64.0),
                         ),
                       ),
