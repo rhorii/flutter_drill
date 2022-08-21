@@ -311,6 +311,7 @@ class _DrillViewState extends State<DrillView> {
       ),
       style: const TextStyle(fontSize: 256.0),
       textAlign: TextAlign.center,
+      showCursor: false,
     );
   }
 
@@ -323,6 +324,7 @@ class _DrillViewState extends State<DrillView> {
       keyboardType: TextInputType.number,
       style: const TextStyle(fontSize: 256.0),
       textAlign: TextAlign.center,
+      showCursor: false,
       inputFormatters: <TextInputFormatter>[
         FilteringTextInputFormatter.digitsOnly,
       ],
