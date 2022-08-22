@@ -261,6 +261,7 @@ class _DrillViewState extends State<DrillView> {
                     ],
                   );
                 },
+                barrierDismissible: false,
               );
             } else {
               showDialog(
@@ -288,6 +289,7 @@ class _DrillViewState extends State<DrillView> {
                     ],
                   );
                 },
+                barrierDismissible: false,
               );
             }
           },
