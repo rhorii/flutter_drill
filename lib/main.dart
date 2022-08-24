@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:math';
 
+import 'package:audioplayers/audioplayers.dart';
 import 'package:csv/csv.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -229,68 +230,21 @@ class _DrillViewState extends State<DrillView> {
         ),
         const SizedBox(height: 64.0),
         ElevatedButton(
-          onPressed: () {
+          onPressed: () async {
             if (_controller.text.isEmpty) {
               return;
             }
 
             if (_controller.text == _currentDrill().answer) {
-              showDialog(
-                context: context,
-                builder: (context) {
-                  return AlertDialog(
-                    content: const Text(
-                      'せいかい',
-                      style: TextStyle(fontSize: 128.0),
-                    ),
-                    contentPadding: const EdgeInsets.all(48.0),
-                    actions: <Widget>[
-                      TextButton(
-                        onPressed: () {
-                          setState(() {
-                            _index = _randomIndex();
-                            _controller.clear();
-                          });
-                          Navigator.pop(context);
-                        },
-                        child: const Text(
-                          'つぎへ',
-                          style: TextStyle(fontSize: 64.0),
-                        ),
-                      )
-                    ],
-                  );
-                },
-                barrierDismissible: false,
-              );
+              await AudioPlayer().setSource(AssetSource('sounds/correct.mp3'));
+
+              setState(() {
+                _index = _randomIndex();
+                _controller.clear();
+              });
             } else {
-              showDialog(
-                context: context,
-                builder: (context) {
-                  return AlertDialog(
-                    content: const Text(
-                      'まちがい',
-                      style: TextStyle(fontSize: 128.0),
-                    ),
-                    contentPadding: const EdgeInsets.all(48.0),
-                    actions: <Widget>[
-                      TextButton(
-                        onPressed: () {
-                          setState(() {
-                            _controller.clear();
-                          });
-                          Navigator.pop(context);
-                        },
-                        child: const Text(
-                          'やりなおし',
-                          style: TextStyle(fontSize: 64.0),
-                        ),
-                      ),
-                    ],
-                  );
-                },
-                barrierDismissible: false,
-              );
+              await AudioPlayer()
+                  .setSource(AssetSource('sounds/incorrect.mp3'));
             }
           },
           style: ElevatedButton.styleFrom(
