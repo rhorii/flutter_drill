@@ -184,6 +184,7 @@ class DrillView extends StatefulWidget {
 }
 
 class _DrillViewState extends State<DrillView> {
+  final _player = AudioPlayer();
   late int _index;
   late TextEditingController _controller;
 
@@ -236,15 +237,14 @@ class _DrillViewState extends State<DrillView> {
             }
 
             if (_controller.text == _currentDrill().answer) {
-              await AudioPlayer().setSource(AssetSource('sounds/correct.mp3'));
+              await _player.play(AssetSource('sounds/correct.mp3'));
 
               setState(() {
                 _index = _randomIndex();
                 _controller.clear();
               });
             } else {
-              await AudioPlayer()
-                  .setSource(AssetSource('sounds/incorrect.mp3'));
+              _player.play(AssetSource('sounds/incorrect.mp3'));
             }
           },
           style: ElevatedButton.styleFrom(
