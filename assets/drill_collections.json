@@ -12,10 +12,78 @@
         ]
     },
     {
-        "title": "ぜんぶ",
+        "title": "10までのたしざん・ひきざん",
         "paths": [
             "assets/drill/addition_up_to_10.csv",
             "assets/drill/subtraction_up_to_10.csv"
+        ]
+    },
+    {
+        "title": "1のだんのかけざん",
+        "paths": [
+            "assets/drill/multiplication_1.csv"
+        ]
+    },
+    {
+        "title": "2のだんのかけざん",
+        "paths": [
+            "assets/drill/multiplication_2.csv"
+        ]
+    },
+    {
+        "title": "3のだんのかけざん",
+        "paths": [
+            "assets/drill/multiplication_3.csv"
+        ]
+    },
+    {
+        "title": "4のだんのかけざん",
+        "paths": [
+            "assets/drill/multiplication_4.csv"
+        ]
+    },
+    {
+        "title": "5のだんのかけざん",
+        "paths": [
+            "assets/drill/multiplication_5.csv"
+        ]
+    },
+    {
+        "title": "6のだんのかけざん",
+        "paths": [
+            "assets/drill/multiplication_6.csv"
+        ]
+    },
+    {
+        "title": "7のだんのかけざん",
+        "paths": [
+            "assets/drill/multiplication_7.csv"
+        ]
+    },
+    {
+        "title": "8のだんのかけざん",
+        "paths": [
+            "assets/drill/multiplication_8.csv"
+        ]
+    },
+    {
+        "title": "9のだんのかけざん",
+        "paths": [
+            "assets/drill/multiplication_9.csv"
+        ]
+    },
+    {
+        "title": "かけざん",
+        "paths": [
+            "assets/drill/multiplication_1.csv",
+            "assets/drill/multiplication_2.csv",
+            "assets/drill/multiplication_3.csv",
+            "assets/drill/multiplication_4.csv",
+            "assets/drill/multiplication_5.csv",
+            "assets/drill/multiplication_6.csv",
+            "assets/drill/multiplication_7.csv",
+            "assets/drill/multiplication_8.csv",
+            "assets/drill/multiplication_9.csv"
         ]
     }
 ]
