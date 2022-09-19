@@ -19,6 +19,25 @@
         ]
     },
     {
+        "title": "20までのたしざん（くりあがりなし）",
+        "paths": [
+            "assets/drill/addition_up_to_20_without_carry.csv"
+        ]
+    },
+    {
+        "title": "20までのひきざん（くりさがりなし）",
+        "paths": [
+            "assets/drill/subtraction_up_to_20_without_borrow.csv"
+        ]
+    },
+    {
+        "title": "20までのたしざん・ひきざん（くりあがり・くりさがりなし）",
+        "paths": [
+            "assets/drill/addition_up_to_20_without_carry.csv",
+            "assets/drill/subtraction_up_to_20_without_borrow.csv"
+        ]
+    },
+    {
         "title": "1のだんのかけざん",
         "paths": [
             "assets/drill/multiplication_1.csv"
