@@ -38,6 +38,34 @@
         ]
     },
     {
+        "title": "20までのたしざん（くりあがりあり）",
+        "paths": [
+            "assets/drill/addition_up_to_20_with_carry.csv"
+        ]
+    },
+    {
+        "title": "20までのひきざん（くりさがりあり）",
+        "paths": [
+            "assets/drill/subtraction_up_to_20_with_borrow.csv"
+        ]
+    },
+    {
+        "title": "20までのたしざん・ひきざん（くりあがり・くりさがりあり）",
+        "paths": [
+            "assets/drill/addition_up_to_20_with_carry.csv",
+            "assets/drill/subtraction_up_to_20_with_borrow.csv"
+        ]
+    },
+    {
+        "title": "20までのたしざん・ひきざん",
+        "paths": [
+            "assets/drill/addition_up_to_20_without_carry.csv",
+            "assets/drill/subtraction_up_to_20_without_borrow.csv",
+            "assets/drill/addition_up_to_20_with_carry.csv",
+            "assets/drill/subtraction_up_to_20_with_borrow.csv"
+        ]
+    },
+    {
         "title": "1のだんのかけざん",
         "paths": [
             "assets/drill/multiplication_1.csv"
