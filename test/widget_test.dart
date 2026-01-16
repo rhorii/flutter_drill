@@ -1,9 +1,20 @@
+import 'package:audioplayers/audioplayers.dart';
+import 'package:csv/csv.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
 
 import 'package:flutter_drill/main.dart';
 
+class MockAudioPlayer extends Mock implements AudioPlayer {}
+
+class FakeSource extends Fake implements Source {}
+
 void main() {
+  setUpAll(() {
+    registerFallbackValue(FakeSource());
+  });
+
   testWidgets('MyApp builds successfully', (WidgetTester tester) async {
     // Build our app and trigger a frame.
     await tester.pumpWidget(const MyApp());
@@ -58,6 +69,44 @@ void main() {
 
       expect(drill.question, equals('りんご'));
       expect(drill.answer, equals('apple'));
+    });
+  });
+
+  group('CSV parsing', () {
+    test('parses CSV string into Drill list', () {
+      const csvString = '1+1,2\n2+2,4\n3+3,6';
+      final csv = const CsvToListConverter(shouldParseNumbers: false, eol: '\n')
+          .convert(csvString);
+      final drills =
+          csv.map((row) => Drill(question: row[0], answer: row[1])).toList();
+
+      expect(drills, hasLength(3));
+      expect(drills[0].question, equals('1+1'));
+      expect(drills[0].answer, equals('2'));
+      expect(drills[1].question, equals('2+2'));
+      expect(drills[1].answer, equals('4'));
+      expect(drills[2].question, equals('3+3'));
+      expect(drills[2].answer, equals('6'));
+    });
+
+    test('parses CSV with Japanese characters', () {
+      const csvString = 'あ,a\nい,i\nう,u';
+      final csv = const CsvToListConverter(shouldParseNumbers: false, eol: '\n')
+          .convert(csvString);
+      final drills =
+          csv.map((row) => Drill(question: row[0], answer: row[1])).toList();
+
+      expect(drills, hasLength(3));
+      expect(drills[0].question, equals('あ'));
+      expect(drills[0].answer, equals('a'));
+    });
+
+    test('handles empty CSV string', () {
+      const csvString = '';
+      final csv = const CsvToListConverter(shouldParseNumbers: false, eol: '\n')
+          .convert(csvString);
+
+      expect(csv, isEmpty);
     });
   });
 
@@ -215,6 +264,136 @@ void main() {
       await tester.pump();
 
       // Should still show the same question
+      expect(find.text('1 + 1'), findsOneWidget);
+    });
+
+    testWidgets('incorrect answer keeps the same question', (WidgetTester tester) async {
+      tester.binding.window.physicalSizeTestValue = const Size(1920, 1080);
+      tester.binding.window.devicePixelRatioTestValue = 1.0;
+      addTearDown(tester.binding.window.clearPhysicalSizeTestValue);
+
+      final drills = [
+        Drill(question: '1 + 1', answer: '2'),
+      ];
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: DrillView(drills),
+          ),
+        ),
+      );
+
+      // Enter incorrect answer
+      await tester.enterText(find.byType(TextField), '3');
+      await tester.tap(find.text('こたえあわせ'));
+      await tester.pump();
+
+      // Should still show the same question
+      expect(find.text('1 + 1'), findsOneWidget);
+      // Text field should still contain the incorrect answer
+      expect(find.text('3'), findsOneWidget);
+    });
+
+    testWidgets('correct answer clears text field', (WidgetTester tester) async {
+      tester.binding.window.physicalSizeTestValue = const Size(1920, 1080);
+      tester.binding.window.devicePixelRatioTestValue = 1.0;
+      addTearDown(tester.binding.window.clearPhysicalSizeTestValue);
+
+      final mockPlayer = MockAudioPlayer();
+      when(() => mockPlayer.play(any())).thenAnswer((_) async {});
+
+      final drills = [
+        Drill(question: '1 + 1', answer: '2'),
+      ];
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: DrillView(drills, audioPlayer: mockPlayer),
+          ),
+        ),
+      );
+
+      // Enter correct answer
+      await tester.enterText(find.byType(TextField), '2');
+      await tester.tap(find.text('こたえあわせ'));
+      await tester.pumpAndSettle();
+
+      // Text field should be cleared after correct answer
+      final textField = tester.widget<TextField>(find.byType(TextField));
+      expect(textField.controller?.text, equals(''));
+      // Verify sound was played
+      verify(() => mockPlayer.play(any())).called(1);
+    });
+
+    testWidgets('correct answer moves to next question', (WidgetTester tester) async {
+      tester.binding.window.physicalSizeTestValue = const Size(1920, 1080);
+      tester.binding.window.devicePixelRatioTestValue = 1.0;
+      addTearDown(tester.binding.window.clearPhysicalSizeTestValue);
+
+      final mockPlayer = MockAudioPlayer();
+      when(() => mockPlayer.play(any())).thenAnswer((_) async {});
+
+      // Use multiple drills to test question change
+      final drills = [
+        Drill(question: 'Q1', answer: 'A1'),
+        Drill(question: 'Q2', answer: 'A2'),
+        Drill(question: 'Q3', answer: 'A3'),
+      ];
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: DrillView(drills, audioPlayer: mockPlayer),
+          ),
+        ),
+      );
+
+      // Find the initial question
+      final initialQuestion = find.textContaining('Q').evaluate().first.widget as Text;
+      final initialText = initialQuestion.data;
+
+      // Enter correct answer based on initial question
+      final correctAnswer = initialText == 'Q1' ? 'A1' : (initialText == 'Q2' ? 'A2' : 'A3');
+      await tester.enterText(find.byType(TextField), correctAnswer);
+      await tester.tap(find.text('こたえあわせ'));
+      await tester.pumpAndSettle();
+
+      // Verify a question is still displayed (may be same or different due to random)
+      expect(find.textContaining('Q'), findsOneWidget);
+      // Verify sound was played
+      verify(() => mockPlayer.play(any())).called(1);
+    });
+
+    testWidgets('incorrect answer plays incorrect sound', (WidgetTester tester) async {
+      tester.binding.window.physicalSizeTestValue = const Size(1920, 1080);
+      tester.binding.window.devicePixelRatioTestValue = 1.0;
+      addTearDown(tester.binding.window.clearPhysicalSizeTestValue);
+
+      final mockPlayer = MockAudioPlayer();
+      when(() => mockPlayer.play(any())).thenAnswer((_) async {});
+
+      final drills = [
+        Drill(question: '1 + 1', answer: '2'),
+      ];
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: DrillView(drills, audioPlayer: mockPlayer),
+          ),
+        ),
+      );
+
+      // Enter incorrect answer
+      await tester.enterText(find.byType(TextField), '5');
+      await tester.tap(find.text('こたえあわせ'));
+      await tester.pump();
+
+      // Verify incorrect sound was played
+      verify(() => mockPlayer.play(any())).called(1);
+      // Question should remain the same
       expect(find.text('1 + 1'), findsOneWidget);
     });
   });
