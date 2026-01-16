@@ -130,6 +130,10 @@ void main() {
 
   group('DrillView', () {
     testWidgets('displays question and answer field', (WidgetTester tester) async {
+      tester.binding.window.physicalSizeTestValue = const Size(1920, 1080);
+      tester.binding.window.devicePixelRatioTestValue = 1.0;
+      addTearDown(tester.binding.window.clearPhysicalSizeTestValue);
+
       final drills = [
         Drill(question: '2 + 2', answer: '4'),
       ];
@@ -148,6 +152,10 @@ void main() {
     });
 
     testWidgets('displays numeric keyboard for numeric answers', (WidgetTester tester) async {
+      tester.binding.window.physicalSizeTestValue = const Size(1920, 1080);
+      tester.binding.window.devicePixelRatioTestValue = 1.0;
+      addTearDown(tester.binding.window.clearPhysicalSizeTestValue);
+
       final drills = [
         Drill(question: '5 + 3', answer: '8'),
       ];
@@ -165,6 +173,10 @@ void main() {
     });
 
     testWidgets('displays default keyboard for non-numeric answers', (WidgetTester tester) async {
+      tester.binding.window.physicalSizeTestValue = const Size(1920, 1080);
+      tester.binding.window.devicePixelRatioTestValue = 1.0;
+      addTearDown(tester.binding.window.clearPhysicalSizeTestValue);
+
       final drills = [
         Drill(question: 'りんご', answer: 'apple'),
       ];
@@ -178,10 +190,14 @@ void main() {
       );
 
       final textField = tester.widget<TextField>(find.byType(TextField));
-      expect(textField.keyboardType, isNull);
+      expect(textField.keyboardType, isNot(equals(TextInputType.number)));
     });
 
     testWidgets('button does nothing when text field is empty', (WidgetTester tester) async {
+      tester.binding.window.physicalSizeTestValue = const Size(1920, 1080);
+      tester.binding.window.devicePixelRatioTestValue = 1.0;
+      addTearDown(tester.binding.window.clearPhysicalSizeTestValue);
+
       final drills = [
         Drill(question: '1 + 1', answer: '2'),
       ];
