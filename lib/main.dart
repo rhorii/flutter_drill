@@ -11,7 +11,7 @@ void main() {
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -42,7 +42,7 @@ class DrillCollection {
 }
 
 class DrillCollectionListPage extends StatelessWidget {
-  const DrillCollectionListPage({Key? key}) : super(key: key);
+  const DrillCollectionListPage({super.key});
 
   Future<List<DrillCollection>> _loadDrillCollections() async {
     const path = 'assets/drill_collections.json';
@@ -86,9 +86,9 @@ class DrillCollectionListView extends StatelessWidget {
   final List<DrillCollection> drillCollections;
 
   const DrillCollectionListView({
-    Key? key,
+    super.key,
     required this.drillCollections,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -128,9 +128,9 @@ class DrillPage extends StatelessWidget {
   final DrillCollection drillCollection;
 
   const DrillPage({
-    Key? key,
+    super.key,
     required this.drillCollection,
-  }) : super(key: key);
+  });
 
   Future<List<Drill>> _loadDrills() async {
     List<Drill> result = [];
@@ -177,7 +177,7 @@ class DrillPage extends StatelessWidget {
 class DrillView extends StatefulWidget {
   final List<Drill> drills;
 
-  const DrillView(this.drills, {Key? key}) : super(key: key);
+  const DrillView(this.drills, {super.key});
 
   @override
   State<DrillView> createState() => _DrillViewState();
