@@ -176,21 +176,23 @@ class DrillPage extends StatelessWidget {
 
 class DrillView extends StatefulWidget {
   final List<Drill> drills;
+  final AudioPlayer? audioPlayer;
 
-  const DrillView(this.drills, {super.key});
+  const DrillView(this.drills, {super.key, this.audioPlayer});
 
   @override
   State<DrillView> createState() => _DrillViewState();
 }
 
 class _DrillViewState extends State<DrillView> {
-  final _player = AudioPlayer();
+  late final AudioPlayer _player;
   late int _index;
   late TextEditingController _controller;
 
   @override
   void initState() {
     super.initState();
+    _player = widget.audioPlayer ?? AudioPlayer();
     _index = _randomIndex();
     _controller = TextEditingController();
   }
