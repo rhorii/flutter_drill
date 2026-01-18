@@ -6,6 +6,8 @@ import 'package:csv/csv.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import 'responsive_utils.dart';
+
 void main() {
   runApp(const MyApp());
 }
@@ -92,12 +94,14 @@ class DrillCollectionListView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final sizes = ResponsiveSizes.of(context);
+
     return ListView.separated(
       itemBuilder: (context, index) {
         return ListTile(
           title: Text(
             drillCollections[index].title,
-            style: const TextStyle(fontSize: 64.0),
+            style: TextStyle(fontSize: sizes.listTitleFontSize),
           ),
           onTap: () {
             Navigator.push(context, MaterialPageRoute(
@@ -211,76 +215,90 @@ class _DrillViewState extends State<DrillView> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: <Widget>[
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 64.0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              Text(
-                _currentDrill().question,
-                style: const TextStyle(fontSize: 256.0),
-              ),
-              Expanded(
-                child: _isNumeric(_currentDrill().answer)
-                    ? _numericAnswerField()
-                    : _defaultAnswerField(),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 64.0),
-        ElevatedButton(
-          onPressed: () async {
-            if (_controller.text.isEmpty) {
-              return;
-            }
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final sizes = ResponsiveSizes(
+          screenWidth: constraints.maxWidth,
+          screenHeight: constraints.maxHeight,
+        );
 
-            if (_controller.text == _currentDrill().answer) {
-              await _player.play(AssetSource('sounds/correct.mp3'));
+        return Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: sizes.horizontalPadding),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  Flexible(
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        _currentDrill().question,
+                        style: TextStyle(fontSize: sizes.questionFontSize),
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: _isNumeric(_currentDrill().answer)
+                        ? _numericAnswerField(sizes)
+                        : _defaultAnswerField(sizes),
+                  ),
+                ],
+              ),
+            ),
+            SizedBox(height: sizes.spacerHeight),
+            ElevatedButton(
+              onPressed: () async {
+                if (_controller.text.isEmpty) {
+                  return;
+                }
 
-              setState(() {
-                _index = _randomIndex();
-                _controller.clear();
-              });
-            } else {
-              _player.play(AssetSource('sounds/incorrect.mp3'));
-            }
-          },
-          style: ElevatedButton.styleFrom(
-            padding: const EdgeInsets.all(32.0),
-          ),
-          child: const Text(
-            'こたえあわせ',
-            style: TextStyle(fontSize: 64.0),
-          ),
-        ),
-      ],
+                if (_controller.text == _currentDrill().answer) {
+                  await _player.play(AssetSource('sounds/correct.mp3'));
+
+                  setState(() {
+                    _index = _randomIndex();
+                    _controller.clear();
+                  });
+                } else {
+                  _player.play(AssetSource('sounds/incorrect.mp3'));
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                padding: EdgeInsets.all(sizes.buttonPadding),
+              ),
+              child: Text(
+                'こたえあわせ',
+                style: TextStyle(fontSize: sizes.buttonFontSize),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 
-  TextField _defaultAnswerField() {
+  TextField _defaultAnswerField(ResponsiveSizes sizes) {
     return TextField(
       controller: _controller,
       decoration: const InputDecoration(
         border: OutlineInputBorder(),
       ),
-      style: const TextStyle(fontSize: 256.0),
+      style: TextStyle(fontSize: sizes.answerFontSize),
       textAlign: TextAlign.center,
       showCursor: false,
     );
   }
 
-  TextField _numericAnswerField() {
+  TextField _numericAnswerField(ResponsiveSizes sizes) {
     return TextField(
       controller: _controller,
       decoration: const InputDecoration(
         border: OutlineInputBorder(),
       ),
       keyboardType: TextInputType.number,
-      style: const TextStyle(fontSize: 256.0),
+      style: TextStyle(fontSize: sizes.answerFontSize),
       textAlign: TextAlign.center,
       showCursor: false,
       inputFormatters: <TextInputFormatter>[

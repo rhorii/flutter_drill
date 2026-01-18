@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
 import 'package:flutter_drill/main.dart';
+import 'package:flutter_drill/responsive_utils.dart';
 
 class MockAudioPlayer extends Mock implements AudioPlayer {}
 
@@ -396,5 +397,86 @@ void main() {
       // Question should remain the same
       expect(find.text('1 + 1'), findsOneWidget);
     });
+  });
+
+  group('ResponsiveSizes', () {
+    test('calculates sizes based on shortest side (landscape)', () {
+      final sizes = ResponsiveSizes(screenWidth: 800, screenHeight: 600);
+
+      expect(sizes.shortestSide, equals(600));
+      expect(sizes.questionFontSize, equals(150)); // 600 * 0.25
+      expect(sizes.answerFontSize, equals(120)); // 600 * 0.20
+      expect(sizes.listTitleFontSize, equals(48)); // 600 * 0.08
+      expect(sizes.buttonFontSize, equals(48)); // 600 * 0.08
+    });
+
+    test('calculates sizes based on shortest side (portrait)', () {
+      final sizes = ResponsiveSizes(screenWidth: 400, screenHeight: 800);
+
+      expect(sizes.shortestSide, equals(400));
+      expect(sizes.questionFontSize, equals(100)); // 400 * 0.25
+      expect(sizes.answerFontSize, equals(80)); // 400 * 0.20
+    });
+
+    test('clamps questionFontSize to minimum 48', () {
+      final sizes = ResponsiveSizes(screenWidth: 100, screenHeight: 200);
+
+      expect(sizes.shortestSide, equals(100));
+      // 100 * 0.25 = 25, but clamped to 48
+      expect(sizes.questionFontSize, equals(48));
+    });
+
+    test('clamps questionFontSize to maximum 256', () {
+      final sizes = ResponsiveSizes(screenWidth: 2000, screenHeight: 2000);
+
+      expect(sizes.shortestSide, equals(2000));
+      // 2000 * 0.25 = 500, but clamped to 256
+      expect(sizes.questionFontSize, equals(256));
+    });
+
+    test('calculates padding and spacing proportionally', () {
+      final sizes = ResponsiveSizes(screenWidth: 1000, screenHeight: 800);
+
+      expect(sizes.shortestSide, equals(800));
+      expect(sizes.horizontalPadding, equals(40)); // 800 * 0.05
+      expect(sizes.buttonPadding, equals(24)); // 800 * 0.03
+      expect(sizes.spacerHeight, equals(40)); // 800 * 0.05
+    });
+  });
+
+  group('Responsive DrillView', () {
+    final testSizes = [
+      ('iPhone portrait', const Size(390, 844)),
+      ('iPhone landscape', const Size(844, 390)),
+      ('iPad portrait', const Size(820, 1180)),
+      ('iPad landscape', const Size(1180, 820)),
+      ('desktop', const Size(1920, 1080)),
+    ];
+
+    for (final (name, size) in testSizes) {
+      testWidgets('renders without overflow on $name', (WidgetTester tester) async {
+        tester.binding.window.physicalSizeTestValue = size;
+        tester.binding.window.devicePixelRatioTestValue = 1.0;
+        addTearDown(tester.binding.window.clearPhysicalSizeTestValue);
+
+        final drills = [
+          Drill(question: '1+1', answer: '2'),
+        ];
+
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: DrillView(drills),
+            ),
+          ),
+        );
+
+        // Verify no overflow errors
+        expect(tester.takeException(), isNull);
+        expect(find.text('1+1'), findsOneWidget);
+        expect(find.byType(TextField), findsOneWidget);
+        expect(find.text('こたえあわせ'), findsOneWidget);
+      });
+    }
   });
 }
